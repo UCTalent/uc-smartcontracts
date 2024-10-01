@@ -15,6 +15,7 @@ Table of Contents
    * [Read functions](#read-functions)
          * [config](#config)
          * [jobs](#jobs)
+     
    * [Events](#events)
          * [JobCreated](#jobcreated)
          * [JobClosed](#jobclosed)
