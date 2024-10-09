@@ -16,7 +16,10 @@ contract MUSDTToken is IBEP20 {
   mapping (address => mapping (address => uint)) private _allowed;
 
   constructor() {
-    _mint(msg.sender, maxSupply);
+  }
+
+  function mint() external {
+    _mint(msg.sender, 1000e6);
   }
 
   function balanceOf(address _owner) override external view returns (uint) {

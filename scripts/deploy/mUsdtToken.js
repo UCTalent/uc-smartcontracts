@@ -2,9 +2,15 @@ const { ethers, network } = require('hardhat')
 const { verifyContract } = require('../utils/auto-verify')
 const { timeout } = require('../utils/async')
 
-const linkPrefix = `https://${network.config.chainId === 80001 ? 'sepolia.' : ''}basescan.org/address/`
-
 async function main() {
+  let linkPrefix = 'https://bscscan.com/address/'
+  if (network.config.chainId === 97) {
+    linkPrefix = 'https://testnet.bscscan.com/address/'
+  } else if (network.config.chainId === 84532) {
+    linkPrefix = 'https://sepolia.basescan.org/address/'
+  } else if (network.config.chainId === 8453) {
+    linkPrefix = 'https://basescan.org/address/'
+  }
   const MUSDTToken = await ethers.getContractFactory('MUSDTToken')
   const token = await MUSDTToken.deploy()
   console.log(`MUSDTToken Proxy contract address: ${linkPrefix}${token.address}`)

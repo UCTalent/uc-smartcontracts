@@ -4,8 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "solhint": "npx solhint 'contracts/**/*.sol'",
-    "prepare": "husky install"
+    "solhint": "npx solhint 'contracts/**/*.sol'"
   },
   "dependencies": {
     "@defi-wonderland/smock": "^2.4.0",
@@ -40,14 +39,13 @@
     "@typechain/hardhat": "^6.1.2",
     "babel-eslint": "^10.1.0",
     "chai": "^4.2.0",
-"eslint-config-airbnb": "^19.0.4",
+    "eslint-config-airbnb": "^19.0.4",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-jsx-a11y": "^6.6.0",
     "eslint-plugin-react": "^7.30.1",
     "ethers": "^5.4.7",
     "hardhat-contract-sizer": "^2.8.0",
     "hardhat-gas-reporter": "^1.0.8",
-    "husky": "^8.0.1",
     "solhint": "^3.3.7",
     "solidity-coverage": "^0.7.21",
     "typechain": "^8.1.0",
