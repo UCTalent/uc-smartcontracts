@@ -6,44 +6,26 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 abstract contract Auth is Initializable {
 
-  address public mainAdmin;
-  address public contractAdmin;
+  address public owner;
 
-  event OwnershipTransferred(address indexed _previousOwner, address indexed _newOwner);
-  event ContractAdminUpdated(address indexed _newOwner);
+  event OwnerUpdated(address indexed _newOwner);
 
-  function initialize(address _mainAdmin) virtual public initializer {
-    mainAdmin = _mainAdmin;
-    contractAdmin = _mainAdmin;
+  function __Auth_init(address _mn) internal onlyInitializing {
+    owner = _mn;
   }
 
-  modifier onlyMainAdmin() {
-    require(_isMainAdmin(), "onlyMainAdmin");
+  modifier onlyOwner() {
+    require(_isOwner(), "onlyOwner");
     _;
   }
 
-  modifier onlyContractAdmin() {
-    require(_isContractAdmin() || _isMainAdmin(), "onlyContractAdmin");
-    _;
+  function updateOwner(address _newValue) external onlyOwner {
+    require(_newValue != address(0x0));
+    owner = _newValue;
+    emit OwnerUpdated(_newValue);
   }
 
-  function transferOwnership(address _newOwner) external onlyMainAdmin {
-    require(_newOwner != address(0x0));
-    mainAdmin = _newOwner;
-    emit OwnershipTransferred(msg.sender, _newOwner);
-  }
-
-  function updateContractAdmin(address _newAdmin) external onlyMainAdmin {
-    require(_newAdmin != address(0x0));
-    contractAdmin = _newAdmin;
-    emit ContractAdminUpdated(_newAdmin);
-  }
-
-  function _isMainAdmin() public view returns (bool) {
-    return msg.sender == mainAdmin;
-  }
-
-  function _isContractAdmin() public view returns (bool) {
-    return msg.sender == contractAdmin;
+  function _isOwner() internal view returns (bool) {
+    return msg.sender == owner;
   }
 }

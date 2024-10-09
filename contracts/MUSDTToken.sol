@@ -2,14 +2,12 @@
 
 pragma solidity 0.8.9;
 
-import "../libs/zeppelin/token/BEP20/IBEP20.sol";
+import "./libs/zeppelin/token/BEP20/IBEP20.sol";
 
 contract MUSDTToken is IBEP20 {
 
   string public constant name = "Mock USDT";
   string public constant symbol = "MUSDT";
-  //  uint public constant decimals = 18; // in BSC
-  //  uint public constant maxSupply = 700e24; // in BSC
   uint public constant decimals = 6; // in Polygon
   uint public constant maxSupply = 700e12; // in polygon
   uint public totalSupply;

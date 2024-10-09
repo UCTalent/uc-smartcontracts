@@ -6,68 +6,40 @@ import "./Auth.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 
 abstract contract NFTAuth is Auth, ContextUpgradeable {
-  mapping(address => bool) public mintAdmins;
+  mapping(address => bool) public mintAble;
   mapping(address => bool) public transferable;
-  mapping(address => bool) public gameContracts;
-  address public upgradingContract;
+  mapping (address => bool) public waitingList;
 
-  function initialize(address _mainAdmin) virtual override public {
-    Auth.initialize(_mainAdmin);
+  function __NFTAuth_init(address _mn) internal onlyInitializing {
+    Auth.__Auth_init(_mn);
   }
 
-  modifier onlyMintAdmin() {
-    require(_isMintAdmin() || _isMainAdmin(), "NFTAuth: Only mint admin");
+  modifier onlyMintRight() {
+    require(_isMintRight() || _isOwner(), "NFTAuth: Only mint right");
     _;
   }
 
-  modifier onlyTransferAdmin() {
-    require(_isTransferAble() || _isMainAdmin(), "NFTAuth: Only transfer admin");
+  modifier onlyTransferable() {
+    require(_isTransferAble() || _isOwner(), "NFTAuth: Only transferAble");
     _;
   }
 
-  modifier onlyGameContract() {
-    require(_isGameContracts() || _isMainAdmin(), "NFTAuth: Only game contract");
-    _;
-  }
-
-  modifier onlyUpgradingContract() {
-    require(_isUpgradingContract() || _isMainAdmin(), "NFTAuth: Only upgrading Contract");
-    _;
-  }
-
-  function _isMintAdmin() internal view returns (bool) {
-    return mintAdmins[_msgSender()];
+  function  _isMintRight() internal view returns (bool) {
+    return mintAble[_msgSender()];
   }
 
   function _isTransferAble() internal view returns (bool) {
     return transferable[_msgSender()];
   }
 
-  function _isGameContracts() internal view returns (bool) {
-    return gameContracts[_msgSender()];
-  }
-
-  function _isUpgradingContract() internal view returns (bool) {
-    return _msgSender() == upgradingContract;
-  }
-
-  function updateMintAdmin(address _address, bool _mintAble) external onlyMainAdmin {
+  function updateMintAble(address _address, bool _mintAble) external onlyOwner {
     require(_address != address(0), "NFTAuth: Address invalid");
-    mintAdmins[_address] = _mintAble;
+    mintAble[_address] = _mintAble;
   }
 
-  function updateTransferable(address _address, bool _transferable) external onlyMainAdmin {
+  function updateTransferable(address _address, bool _transferable) external onlyOwner {
     require(_address != address(0), "NFTAuth: Address invalid");
     transferable[_address] = _transferable;
   }
 
-  function updateGameContract(address _contract, bool _status) external onlyMainAdmin {
-    require(_contract != address(0), "NFTAuth: Address invalid");
-    gameContracts[_contract] = _status;
-  }
-
-  function updateUpgradingContract(address _contract) external onlyMainAdmin {
-    require(_contract != address(0), "NFTAuth: Address invalid");
-    upgradingContract = _contract;
-  }
 }

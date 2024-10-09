@@ -4,38 +4,8 @@ pragma solidity 0.8.9;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "./libs/zeppelin/token/BEP20/IBEP20.sol";
-
-abstract contract Auth is Initializable {
-
-  address public owner;
-
-  event OwnerUpdated(address indexed _newOwner);
-
-  function __Auth_init(address _mn) virtual internal {
-    owner = _mn;
-  }
-
-  modifier onlyOwner() {
-    require(_isOwner(), "onlyOwner");
-    _;
-  }
-
-  function updateOwner(address _newValue) external onlyOwner {
-    require(_newValue != address(0x0));
-    owner = _newValue;
-    emit OwnerUpdated(_newValue);
-  }
-
-  function _isOwner() internal view returns (bool) {
-    return msg.sender == owner;
-  }
-}
-
-abstract contract Base is Auth {
-  function __BaseContract_init(address _owner) internal {
-    __Auth_init(_owner);
-  }
-}
+import "./abstract/Base.sol";
+import "./interfaces/IJobNFT.sol";
 
 contract UCReferral is Base {
   IBEP20 public usdtToken;
@@ -65,10 +35,12 @@ contract UCReferral is Base {
     uint timestamp;
     uint closeTimestamp;
     uint disputeTimestamp;
+    uint nftId;
     Status status;
   }
 
   Config public config;
+  IJobNFT public jobNFT;
   mapping (bytes32 => Job) public jobs;
   uint constant ONE_HUNDRED_DECIMAL3 = 100000;
 
@@ -79,13 +51,15 @@ contract UCReferral is Base {
   event DisputeResolved(bytes32 indexed jobId, bool reverted, uint timestamp);
   event ConfigUpdated(uint ecosystemFeePercentage, uint referralFeePercentage, uint disputeFeePercentage, uint baseReferalPercentage, uint freezePeriod, address treasury);
   
-  function initialize() public initializer {
+  function initialize(address _usdt, address _jobNFT) public initializer {
     __BaseContract_init(msg.sender);
     config.ecosystemFeePercentage = 10000;
     config.referralFeePercentage = 10000;
     config.disputeFeePercentage = 10000;
     config.baseReferalPercentage = 50000;
     config.freezePeriod = 7 days;
+    usdtToken = IBEP20(_usdt);
+    jobNFT = IJobNFT(_jobNFT);
   }
 
   function createJob(bytes32 _jobId, uint _amount, uint _timestamp) external {
@@ -96,13 +70,14 @@ contract UCReferral is Base {
     job.amount = _amount;
     job.timestamp = _timestamp;
     job.status = Status.CREATED;
+    job.nftId = jobNFT.mint(msg.sender);
     emit JobCreated(_jobId, msg.sender, _amount, _timestamp);
   }
 
   function closeJob(bytes32 _jobId) external {
     Job storage job = jobs[_jobId];
     require(job.status == Status.CREATED, "UCReferral: not created");
-    require(job.creator == msg.sender, "UCReferral: not creator");
+    require(jobNFT.ownerOf(job.nftId) == msg.sender, "UCReferral: 401");
     job.status = Status.CLOSED;
     job.closeTimestamp = block.timestamp;
     emit JobClosed(_jobId, msg.sender, job.amount, block.timestamp);
@@ -170,6 +145,10 @@ contract UCReferral is Base {
 
   function setUsdtToken(address _usdtToken) external onlyOwner {
     usdtToken = IBEP20(_usdtToken);
+  }
+
+  function setJobNFT(address _jobNFT) external onlyOwner {
+    jobNFT = IJobNFT(_jobNFT);
   }
 
   function _transferToken(IBEP20 _token, address _to, uint _amount) private {

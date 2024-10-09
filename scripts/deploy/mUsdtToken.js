@@ -2,7 +2,7 @@ const { ethers, network } = require('hardhat')
 const { verifyContract } = require('../utils/auto-verify')
 const { timeout } = require('../utils/async')
 
-const linkPrefix = `https://${network.config.chainId === 80001 ? 'testnet.' : ''}bscscan.com/address/`
+const linkPrefix = `https://${network.config.chainId === 80001 ? 'sepolia.' : ''}basescan.org/address/`
 
 async function main() {
   const MUSDTToken = await ethers.getContractFactory('MUSDTToken')
