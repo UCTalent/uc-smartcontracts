@@ -1,0 +1,14 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+red='\033[0;31m'
+green='\033[0;32m'
+yellow='\033[0;33m'
+no_color='\033[0m'
+
+echo "${yellow}*** Pre-commit checking....${no_color}"
+
+FORCE_COLOR=1 yarn lint
+FORCE_COLOR=1 yarn solint
+
+echo "${green}*** Pre-commit successfully ***${no_color}"
