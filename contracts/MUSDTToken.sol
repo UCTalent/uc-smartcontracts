@@ -18,10 +18,6 @@ contract MUSDTToken is IBEP20 {
   constructor() {
   }
 
-  function mint() external {
-    _mint(msg.sender, 1000e6);
-  }
-
   function balanceOf(address _owner) override external view returns (uint) {
     return _balances[_owner];
   }
@@ -87,8 +83,6 @@ contract MUSDTToken is IBEP20 {
   }
 
   function mint(address _owner, uint _amount) external {
-    _balances[_owner] = _balances[_owner] + _amount;
-    totalSupply = totalSupply + _amount;
-    emit Transfer(address(0), _owner, _amount);
+    _mint(_owner, _amount);
   }
 }
