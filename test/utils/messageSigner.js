@@ -1,7 +1,7 @@
 const { ecsign, privateToAddress } = require('ethereumjs-util')
 const { getMessage } = require('eip-712')
 
-const EIP712_NAME = 'NAME'
+const EIP712_NAME = 'UCTalent'
 const EIP712_VERSION = '1'
 const EIP712Domain = [
   { name: 'name', type: 'string' },
@@ -10,19 +10,24 @@ const EIP712Domain = [
   { name: 'verifyingContract', type: 'address' }
 ]
 
-const BuySaleDatas = [
-  { name: 'user', type: 'address' },
-  { name: 'allocated', type: 'uint256' },
-  { name: 'price', type: 'uint256' }
+const CloseJobDatas = [
+  { name: 'jobId', type: 'bytes32' },
+  { name: 'success', type: 'bool' },
+  { name: 'talent', type: 'address' },
+  { name: 'referrer', type: 'address' },
+  { name: 'refPercentage', type: 'uint256' },
+  { name: 'applyTimestamp', type: 'uint256' },
+  { name: 'refTimestamp', type: 'uint256' },
+  { name: 'nonce', type: 'uint256' }
 ]
 
-function signMessageBuyPrivateSale(verifyingContract, message, chainId = 1) {
+function signMessageCloseJob(admin, verifyingContract, message, chainId = 31337) {
   const typedData = {
     types: {
       EIP712Domain,
-      Buy: BuySaleDatas
+      CloseJob: CloseJobDatas
     },
-    primaryType: 'Buy',
+    primaryType: 'CloseJob',
     domain: {
       name: EIP712_NAME,
       version: EIP712_VERSION,
@@ -31,7 +36,7 @@ function signMessageBuyPrivateSale(verifyingContract, message, chainId = 1) {
     },
     message
   };
-  const privateKey = Buffer.from(process.env.PRIVATE_KEY_ADMIN_FOR_TEST, 'hex')
+  const privateKey = Buffer.from(admin, 'hex')
 
   const messageFromData = getMessage(typedData, true)
   const { r, s, v } = ecsign(messageFromData, privateKey)
@@ -40,13 +45,13 @@ function signMessageBuyPrivateSale(verifyingContract, message, chainId = 1) {
 
 function getAddressFromPrivateKey(key) {
   // eslint-disable-next-line no-buffer-constructor
-  const account = privateToAddress(new Buffer(key, 'hex'))
+  const account = privateToAddress(new Buffer.from(key, 'hex'))
   return `0x${account.toString('hex')}`
 }
 
 module.exports = {
   getAddressFromPrivateKey,
-  signMessageBuyPrivateSale,
+  signMessageCloseJob,
   EIP712_NAME,
   EIP712_VERSION
 }

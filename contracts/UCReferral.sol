@@ -73,6 +73,7 @@ contract UCReferral is Base, EIP712Upgradeable {
     config.disputeFeePercentage = 10000;
     config.baseReferalPercentage = 50000;
     config.freezePeriod = 7 days;
+    config.serverSigner = msg.sender;
     usdtToken = IBEP20(_usdt);
     jobNFT = IJobNFT(_jobNFT);
   }
@@ -211,7 +212,7 @@ contract UCReferral is Base, EIP712Upgradeable {
     uint _refTimestamp, 
     bytes memory _signature) private {
     bytes32 digest = _hashTypedDataV4(keccak256(abi.encode(
-        keccak256("CloseJob(bytes32 jobIb,bool _success,address talent,address referrer,uint256 refPercentage,uint256 applyTimestamp,uint256 refTimestamp,uint256 nonce)"),
+        keccak256("CloseJob(bytes32 jobId,bool success,address talent,address referrer,uint256 refPercentage,uint256 applyTimestamp,uint256 refTimestamp,uint256 nonce)"),
         _jobId,
         _success,
         _talent,

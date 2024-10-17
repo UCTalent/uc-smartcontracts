@@ -10,8 +10,8 @@ abstract contract Auth is Initializable {
 
   event OwnerUpdated(address indexed _newOwner);
 
-  function __Auth_init(address _mn) internal onlyInitializing {
-    owner = _mn;
+  function __Auth_init(address _owner) internal onlyInitializing {
+    owner = _owner;
   }
 
   modifier onlyOwner() {

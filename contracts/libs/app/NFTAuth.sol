@@ -10,8 +10,8 @@ abstract contract NFTAuth is Auth, ContextUpgradeable {
   mapping(address => bool) public transferable;
   mapping (address => bool) public waitingList;
 
-  function __NFTAuth_init(address _mn) internal onlyInitializing {
-    Auth.__Auth_init(_mn);
+  function __NFTAuth_init(address _owner) internal onlyInitializing {
+    Auth.__Auth_init(_owner);
   }
 
   modifier onlyMintRight() {

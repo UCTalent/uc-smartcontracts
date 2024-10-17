@@ -23,11 +23,14 @@ let accountsMap = {}
 async function getAccounts() {
   const accounts = await ethers.getSigners()
   if (!accountsMap.mainAdmin) {
+    const hardhatAccounts = config.networks.hardhat.accounts;
+    const mainAdminWallet = ethers.Wallet.fromMnemonic(hardhatAccounts.mnemonic, hardhatAccounts.path + `/${0}`);
     accountsMap = {
       ...accountsMap,
       zeroAddress: '0x0000000000000000000000000000000000000000',
       mainAdmin: accounts[0],
       mainAdminAddress: accounts[0].address,
+      mainAdminKey: mainAdminWallet.privateKey.slice(2),
       contractAdmin: accounts[accounts.length - 1],
       liquidityPool: accounts[0]
     }
