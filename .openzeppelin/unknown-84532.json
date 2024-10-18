@@ -14,6 +14,11 @@
       "address": "0xF62Ca2263042aC0C43b252feaA04cA6DAF8DBD87",
       "txHash": "0x4c90fc357ac26411647647be3a3975166cf678c7c924ffb4a77998ca6a509a22",
       "kind": "transparent"
+    },
+    {
+      "address": "0x4Cb3D85c7dE6AA8185720955BE89356980FD8b1B",
+      "txHash": "0x924d004a93740a42fc2e31403a69844290c1b29bf9c2e21a4c4c60663b51202a",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -409,6 +414,284 @@
                 "label": "status",
                 "type": "t_enum(Status)537",
                 "offset": 0,
+                "slot": "9"
+              }
+            ],
+            "numberOfBytes": "320"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        }
+      }
+    },
+    "f9500ea81482c3980132dfa18c38c3d7f6e0395be060798d8a6988130d35d956": {
+      "address": "0x6Edb02f483cfcbf0cB8D32169eE234b6D5aa61f5",
+      "txHash": "0x4250dda0b2f0c692c635c219a7d73672f67e2f65e6e364229d334037eb48cba8",
+      "layout": {
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:62",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:67"
+          },
+          {
+            "label": "owner",
+            "offset": 2,
+            "slot": "0",
+            "type": "t_address",
+            "contract": "Auth",
+            "src": "contracts/libs/app/Auth.sol:9"
+          },
+          {
+            "label": "_HASHED_NAME",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_bytes32",
+            "contract": "EIP712Upgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/utils/cryptography/draft-EIP712Upgradeable.sol:32"
+          },
+          {
+            "label": "_HASHED_VERSION",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_bytes32",
+            "contract": "EIP712Upgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/utils/cryptography/draft-EIP712Upgradeable.sol:33"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "EIP712Upgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/utils/cryptography/draft-EIP712Upgradeable.sol:120"
+          },
+          {
+            "label": "usdtToken",
+            "offset": 0,
+            "slot": "53",
+            "type": "t_contract(IBEP20)2502",
+            "contract": "UCReferral",
+            "src": "contracts/UCReferral.sol:12"
+          },
+          {
+            "label": "config",
+            "offset": 0,
+            "slot": "54",
+            "type": "t_struct(Config)1342_storage",
+            "contract": "UCReferral",
+            "src": "contracts/UCReferral.sol:52"
+          },
+          {
+            "label": "jobNFT",
+            "offset": 0,
+            "slot": "61",
+            "type": "t_contract(IJobNFT)2367",
+            "contract": "UCReferral",
+            "src": "contracts/UCReferral.sol:53"
+          },
+          {
+            "label": "jobs",
+            "offset": 0,
+            "slot": "62",
+            "type": "t_mapping(t_bytes32,t_struct(Job)1367_storage)",
+            "contract": "UCReferral",
+            "src": "contracts/UCReferral.sol:54"
+          },
+          {
+            "label": "nonce",
+            "offset": 0,
+            "slot": "63",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "UCReferral",
+            "src": "contracts/UCReferral.sol:55"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_contract(IBEP20)2502": {
+            "label": "contract IBEP20",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IJobNFT)2367": {
+            "label": "contract IJobNFT",
+            "numberOfBytes": "20"
+          },
+          "t_enum(Result)1327": {
+            "label": "enum UCReferral.Result",
+            "members": [
+              "PENDING",
+              "SUCCESS",
+              "FAIL"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_enum(Status)1323": {
+            "label": "enum UCReferral.Status",
+            "members": [
+              "CREATED",
+              "DISPUTED",
+              "CLOSED",
+              "COMPLETED"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_struct(Job)1367_storage)": {
+            "label": "mapping(bytes32 => struct UCReferral.Job)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Config)1342_storage": {
+            "label": "struct UCReferral.Config",
+            "members": [
+              {
+                "label": "ecosystemFeePercentage",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "referralFeePercentage",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "disputeFeePercentage",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "baseReferalPercentage",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "freezePeriod",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "treasury",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "serverSigner",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "6"
+              }
+            ],
+            "numberOfBytes": "224"
+          },
+          "t_struct(Job)1367_storage": {
+            "label": "struct UCReferral.Job",
+            "members": [
+              {
+                "label": "creator",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "talent",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "referrer",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "referalPercentage",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "amount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "timestamp",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "closeTimestamp",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "disputeTimestamp",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "7"
+              },
+              {
+                "label": "nftId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "8"
+              },
+              {
+                "label": "status",
+                "type": "t_enum(Status)1323",
+                "offset": 0,
+                "slot": "9"
+              },
+              {
+                "label": "result",
+                "type": "t_enum(Result)1327",
+                "offset": 1,
                 "slot": "9"
               }
             ],

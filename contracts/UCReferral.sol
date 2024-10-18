@@ -65,15 +65,16 @@ contract UCReferral is Base, EIP712Upgradeable {
     string memory _name,
     string memory _version,
     address _usdt, 
-    address _jobNFT) public initializer {
-    __BaseContract_init(msg.sender);
+    address _jobNFT,
+    address _owner) public initializer {
+    __BaseContract_init(_owner);
     EIP712Upgradeable.__EIP712_init(_name, _version);
     config.ecosystemFeePercentage = 10000;
     config.referralFeePercentage = 10000;
     config.disputeFeePercentage = 10000;
     config.baseReferalPercentage = 50000;
     config.freezePeriod = 7 days;
-    config.serverSigner = msg.sender;
+    config.serverSigner = _owner;
     usdtToken = IBEP20(_usdt);
     jobNFT = IJobNFT(_jobNFT);
   }
