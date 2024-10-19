@@ -55,7 +55,7 @@ contract UCReferral is Base, EIP712Upgradeable {
   mapping (address => uint) public nonce;
 
   event JobCreated(bytes32 indexed jobId, address indexed creator, uint amount, uint timestamp);
-  event JobClosed(bytes32 indexed jobId, address indexed creator, uint amount, uint timestamp);
+  event JobClosed(bytes32 indexed jobId, address sender, address talent, address referrer, uint refPercentage, uint amount, uint timestamp);
   event JobDisputed(bytes32 indexed jobId, address indexed creator, uint amount, uint timestamp);
   event JobCompleted(bytes32 indexed jobId, address indexed talent, uint amount, uint timestamp);
   event DisputeResolved(bytes32 indexed jobId, bool reverted, uint timestamp);
@@ -111,7 +111,7 @@ contract UCReferral is Base, EIP712Upgradeable {
     job.referrer = _referrer;
     job.referalPercentage = _refPercentage;
     job.result = _success ? Result.SUCCESS : Result.FAIL;
-    emit JobClosed(_jobId, msg.sender, job.amount, block.timestamp);
+    emit JobClosed(_jobId, msg.sender, _talent, _referrer, _refPercentage, job.amount, block.timestamp);
   }
 
   function disputeJob(bytes32 _jobId) external {
