@@ -15,7 +15,8 @@ async function initUCReferralContract() {
   const usdtToken = await initMockTokenInstance('MUSDTToken')
   const jobNFT = await initJobNFTContract()
   const UCReferral = await ethers.getContractFactory('UCReferral')
-  const ucReferral = await upgrades.deployProxy(UCReferral, [EIP712_NAME, EIP712_VERSION, usdtToken.address, jobNFT.address])
+  const accounts = await ethers.getSigners()
+  const ucReferral = await upgrades.deployProxy(UCReferral, [EIP712_NAME, EIP712_VERSION, usdtToken.address, jobNFT.address, accounts[0].address])
   await ucReferral.deployed()
   await jobNFT.updateMintAble(ucReferral.address, true)
   return ucReferral
