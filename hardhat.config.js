@@ -38,6 +38,11 @@ module.exports = {
       accounts: [testnetPrivateKey],
       chainId: 84532
     },
+    cotiTestnet: {
+      url: 'https://testnet.coti.io/rpc',
+      accounts: [testnetPrivateKey],
+      chainId: 7082400,
+    }
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,
