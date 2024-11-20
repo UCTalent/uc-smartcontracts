@@ -27,8 +27,7 @@ contract UCReferral is Base, EIP712Upgradeable {
   struct Config {
     uint ecosystemFeePercentage;
     uint referralFeePercentage;
-    uint disputeFeePercentage;
-    uint baseReferalPercentage;
+    uint disputeFeeAmount;
     uint freezePeriod;
     address treasury;
     address serverSigner;
@@ -43,9 +42,11 @@ contract UCReferral is Base, EIP712Upgradeable {
     uint timestamp;
     uint closeTimestamp;
     uint disputeTimestamp;
+    uint disputeFee;
     uint nftId;
     Status status;
     Result result;
+    IBEP20 paymentToken;
   }
 
   uint constant ONE_HUNDRED_DECIMAL3 = 100000;
@@ -59,7 +60,7 @@ contract UCReferral is Base, EIP712Upgradeable {
   event JobDisputed(bytes32 indexed jobId, address indexed creator, uint amount, uint timestamp);
   event JobCompleted(bytes32 indexed jobId, address indexed talent, uint amount, uint timestamp);
   event DisputeResolved(bytes32 indexed jobId, bool reverted, uint timestamp);
-  event ConfigUpdated(uint ecosystemFeePercentage, uint referralFeePercentage, uint disputeFeePercentage, uint baseReferalPercentage, uint freezePeriod, address treasury, address serverSigner); 
+  event ConfigUpdated(uint ecosystemFeePercentage, uint referralFeePercentage, uint disputeFeeAmount, uint freezePeriod, address treasury, address serverSigner); 
   
   function initialize(
     string memory _name,
@@ -69,26 +70,27 @@ contract UCReferral is Base, EIP712Upgradeable {
     address _owner) public initializer {
     __BaseContract_init(_owner);
     EIP712Upgradeable.__EIP712_init(_name, _version);
-    config.ecosystemFeePercentage = 10000;
+    config.ecosystemFeePercentage = 20000;
     config.referralFeePercentage = 10000;
-    config.disputeFeePercentage = 10000;
-    config.baseReferalPercentage = 50000;
+    config.disputeFeeAmount = 5e6;
     config.freezePeriod = 7 days;
     config.serverSigner = _owner;
     usdtToken = IBEP20(_usdt);
     jobNFT = IJobNFT(_jobNFT);
   }
 
-  function createJob(bytes32 _jobId, uint _amount, uint _timestamp) external {
+  function createJob(bytes32 _jobId, uint _amount, uint _disputeFeeAmount, uint _timestamp, address _erc20Address) external {
     Job storage job = jobs[_jobId];
     require(job.creator == address(0), "UCReferral: job already exists");
-    _takeToken(usdtToken, _amount);
+    job.paymentToken = _erc20Address == address(0) ? usdtToken : IBEP20(_erc20Address);
+    _takeToken(job.paymentToken, _amount);
     job.creator = msg.sender;
     job.amount = _amount;
     job.timestamp = _timestamp;
     job.status = Status.CREATED;
     job.nftId = jobNFT.mint(msg.sender);
     job.result = Result.PENDING;
+    job.disputeFee = _disputeFeeAmount > 0 ? _disputeFeeAmount : config.disputeFeeAmount;
     emit JobCreated(_jobId, msg.sender, _amount, _timestamp);
   }
 
@@ -118,6 +120,7 @@ contract UCReferral is Base, EIP712Upgradeable {
     Job storage job = jobs[_jobId];
     require(job.status == Status.CLOSED, "UCReferral: not closed");
     require(msg.sender == job.talent || msg.sender == job.referrer, "UCReferral: 401");
+    _takeToken(usdtToken, job.disputeFee);
     job.status = Status.DISPUTED;
     job.disputeTimestamp = block.timestamp;
     emit JobDisputed(_jobId, msg.sender, job.amount, block.timestamp);
@@ -128,25 +131,25 @@ contract UCReferral is Base, EIP712Upgradeable {
     require(job.status == Status.DISPUTED, "UCReferral: not disputed");
     job.status = Status.COMPLETED;
     uint ecosystemFee = job.amount * config.ecosystemFeePercentage / ONE_HUNDRED_DECIMAL3;
-    uint disputeFee = job.amount * config.disputeFeePercentage / ONE_HUNDRED_DECIMAL3;
-    _transferToken(usdtToken, config.treasury, ecosystemFee + disputeFee);
-    uint disputeAmount = job.amount - ecosystemFee - disputeFee;
+    _transferToken(usdtToken, config.treasury, job.disputeFee);
     if (_reverted) {
-      _transferToken(usdtToken, job.creator, disputeAmount);
+      _transferToken(job.paymentToken, job.creator, job.amount);
     } else {
-      uint referralFee = _calculateReferralFee(disputeAmount, job.referalPercentage);
-      _transferToken(usdtToken, job.talent, disputeAmount - referralFee);
+      uint distributeAmount = job.amount - ecosystemFee;
       if (job.referrer == address(0)) {
-        _transferToken(usdtToken, job.talent, referralFee);
+        _transferToken(job.paymentToken, job.talent, distributeAmount);
       } else {
-        _transferToken(usdtToken, job.referrer, referralFee);
+        uint referralFee = _calculateReferralFee(distributeAmount, job.referalPercentage);
+        _transferToken(job.paymentToken, job.talent, distributeAmount - referralFee);
+        _transferToken(job.paymentToken, job.referrer, referralFee);
       }
+      _transferToken(job.paymentToken, config.treasury, ecosystemFee);
     }
     emit DisputeResolved(_jobId, _reverted, block.timestamp);
   }
 
-  function _calculateReferralFee(uint _amount, uint _refPercentage) private view returns (uint) {
-    return _amount * (_refPercentage > 0 ? _refPercentage : config.baseReferalPercentage) / ONE_HUNDRED_DECIMAL3;
+  function _calculateReferralFee(uint _amount, uint _refPercentage) private pure returns (uint) {
+    return _amount * _refPercentage / ONE_HUNDRED_DECIMAL3;
   }
 
   function completeJob(bytes32 _jobId) external {
@@ -155,20 +158,20 @@ contract UCReferral is Base, EIP712Upgradeable {
     require(job.closeTimestamp + config.freezePeriod < block.timestamp, "UCReferral: freeze period not ended");
     job.status = Status.COMPLETED;
     uint ecosystemFee = job.amount * config.ecosystemFeePercentage / ONE_HUNDRED_DECIMAL3;
-    _transferToken(usdtToken, config.treasury, ecosystemFee);
     if (job.result == Result.SUCCESS) {
       require(msg.sender == job.talent || msg.sender == job.referrer, "UCReferral: 401");
-      uint referralFee = _calculateReferralFee(job.amount, job.referalPercentage);
-      uint talentAmount = job.amount - ecosystemFee - referralFee;
-      _transferToken(usdtToken, job.talent, talentAmount);
+      uint distributeAmount = job.amount - ecosystemFee;
       if (job.referrer == address(0)) {
-        _transferToken(usdtToken, job.talent, referralFee);
+        _transferToken(job.paymentToken, job.talent, distributeAmount);
       } else {
-        _transferToken(usdtToken, job.referrer, referralFee);
+        uint referralFee = _calculateReferralFee(distributeAmount, job.referalPercentage);
+        _transferToken(job.paymentToken, job.talent, distributeAmount - referralFee);
+        _transferToken(job.paymentToken, job.referrer, referralFee);
       }
+      _transferToken(job.paymentToken, config.treasury, ecosystemFee);
     } else {
       require(jobNFT.ownerOf(job.nftId) == msg.sender, "UCReferral: 401");
-      _transferToken(usdtToken, job.creator, job.amount - ecosystemFee);
+      _transferToken(job.paymentToken, job.creator, job.amount);
     }
     emit JobCompleted(_jobId, job.talent, job.amount, block.timestamp);
   }
@@ -176,19 +179,17 @@ contract UCReferral is Base, EIP712Upgradeable {
   function setConfig(
     uint _ecosystemFeePercentage, 
     uint _referralFeePercentage, 
-    uint _disputeFeePercentage, 
-    uint _baseReferalPercentage, 
+    uint _disputeFeeAmount, 
     uint _freezePeriod,
     address _treasury,
     address _serverSinger) external onlyOwner {
     config.ecosystemFeePercentage = _ecosystemFeePercentage;
     config.referralFeePercentage = _referralFeePercentage;
-    config.disputeFeePercentage = _disputeFeePercentage;
-    config.baseReferalPercentage = _baseReferalPercentage;
+    config.disputeFeeAmount = _disputeFeeAmount;
     config.freezePeriod = _freezePeriod;
     config.treasury = _treasury;
     config.serverSigner = _serverSinger;
-    emit ConfigUpdated(_ecosystemFeePercentage, _referralFeePercentage, _disputeFeePercentage, _baseReferalPercentage, _freezePeriod, _treasury, _serverSinger);
+    emit ConfigUpdated(_ecosystemFeePercentage, _referralFeePercentage, _disputeFeeAmount, _freezePeriod, _treasury, _serverSinger);
   }
 
   function setUsdtToken(address _usdtToken) external onlyOwner {
