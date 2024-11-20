@@ -116,10 +116,10 @@ contract UCReferral is Base, EIP712Upgradeable {
     emit JobClosed(_jobId, msg.sender, _talent, _referrer, _refPercentage, job.amount, block.timestamp);
   }
 
-  function disputeJob(bytes32 _jobId) external {
+  function disputeJob(bytes32 _jobId, bytes memory _signature) external {
     Job storage job = jobs[_jobId];
     require(job.status == Status.CLOSED, "UCReferral: not closed");
-    require(msg.sender == job.talent || msg.sender == job.referrer, "UCReferral: 401");
+    _validateDisputeJobSignature(_jobId, msg.sender, _signature);
     _takeToken(usdtToken, job.disputeFee);
     job.status = Status.DISPUTED;
     job.disputeTimestamp = block.timestamp;
@@ -202,6 +202,22 @@ contract UCReferral is Base, EIP712Upgradeable {
 
   function _transferToken(IBEP20 _token, address _to, uint _amount) private {
     _token.transfer(_to, _amount);
+  }
+
+  function _validateDisputeJobSignature(
+    bytes32 _jobId,
+    address _sender,
+    bytes memory _signature) private {
+    bytes32 digest = _hashTypedDataV4(keccak256(abi.encode(
+        keccak256("DisputeJob(bytes32 jobId,address sender,uint256 nonce)"),
+        _jobId,
+        _sender,
+        nonce[msg.sender]
+      )));
+    nonce[msg.sender]++;
+    address signer = ECDSAUpgradeable.recover(digest, _signature);
+    require(signer == config.serverSigner, "MessageVerifier: invalid signature");
+    require(signer != address(0), "ECDSAUpgradeable: invalid signature");
   }
 
   function _validateCloseJobSignature(
